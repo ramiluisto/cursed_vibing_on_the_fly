@@ -29,4 +29,4 @@ markers = [
     "dangerous: marks tests that make actual API calls",
 ]
 testpaths = ["tests"]
-
+addopts = "-m 'not dangerous'"
