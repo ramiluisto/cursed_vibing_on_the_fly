@@ -59,6 +59,14 @@ When you decorate a function with `@ai_implement`, the following happens:
     * **Subsequent calls** to the function use the cached implementation immediately.
     * If you restart the script, the cache is lost and the LLM will be called again.
 
+### Configuration
+
+You can control behavior with environment variables:
+
+*   `OPENAI_API_KEY`: Required for API access.
+*   `CURSED_VIBING_CACHE_ENABLED`: Set to `false` to disable caching (default: `true`). When disabled, the LLM is called on **every function execution**.
+*   `AI_IMPLEMENT_RETRY_LIMIT`: Number of retries on generation failure (default: 3).
+
 ## Quickstart
 
 Don't. Quickly or at all. **This really does run `exec` on raw LLM output on your machine.** But if you must:

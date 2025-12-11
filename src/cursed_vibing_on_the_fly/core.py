@@ -29,6 +29,7 @@ def _get_client():
 
 _implementation_cache: dict[str, callable] = {}
 _RETRY_LIMIT = int(os.environ.get("AI_IMPLEMENT_RETRY_LIMIT", 3))
+_CACHE_ENABLED = os.environ.get("CURSED_VIBING_CACHE_ENABLED", "true").lower() == "true"
 
 
 # ============ TYPE EXTRACTION HELPERS ============
@@ -259,9 +260,13 @@ def ai_implement(func):
     def wrapper(*args, **kwargs):
         func_name = func.__name__
 
-        if func_name not in _implementation_cache:
-            _implementation_cache[func_name] = _generate_implementation(func)
-
-        return _implementation_cache[func_name](*args, **kwargs)
+        if _CACHE_ENABLED:
+            if func_name not in _implementation_cache:
+                _implementation_cache[func_name] = _generate_implementation(func)
+            return _implementation_cache[func_name](*args, **kwargs)
+        else:
+            # Cache disabled: generate and execute every time
+            implementation = _generate_implementation(func)
+            return implementation(*args, **kwargs)
 
     return wrapper
