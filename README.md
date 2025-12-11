@@ -38,7 +38,7 @@ def check_if_string_equals_number(string_input: str, comparison_number: Union[fl
     pass
 ```
 
-For a mockery of replicability, the system can be set to cache the LLM-invocations for function persistency between calls (in-memory only — lost on restart). As boring as that is.
+For a mockery of replicability, the system can be set to cache the LLM-invocations for function persistency between calls (in-memory only, lost on restart). As boring as that is.
 
 ## Quickstart
 
