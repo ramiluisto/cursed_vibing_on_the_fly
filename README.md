@@ -16,7 +16,7 @@ def check_if_number_is_prime(n):
     pass
 ```
 
-After this, any time you use the `check_if_number_is_prime` function, the decorator will automatically ask `gpt-5-nano` to implement a function of this name and then run it on the fly.
+After this, any time you use the `check_if_number_is_prime` function, the decorator will automatically ask `gpt-5-mini` to implement a function of this name and then run it on the fly.
 
 The system can even include docstrings or pydantic type annotations if you want that fine extra control!
 
