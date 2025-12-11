@@ -36,6 +36,25 @@ def check_if_string_equals_number(string_input: str, comparison_number: Union[fl
     pass
 ```
 
+## How it works
+
+When you decorate a function with `@ai_implement`, the following happens:
+
+1.  **Inspection**: The decorator inspects your function stub. It gathers:
+    *   The function name (very important!).
+    *   The docstring (if provided).
+    *   Type hints (including Pydantic models and `Annotated` descriptions).
+    *   Parameter names and default values.
+
+2.  **Prompt Construction**: This metadata is compiled into a strict system prompt that asks an LLM (GPT-4o-mini by default) to implement the function body.
+
+3.  **Generation & Execution**:
+    *   The LLM returns Python code.
+    *   The code is cleaned (markdown stripped).
+    *   **DANGER**: The code is executed using `exec()` in a local namespace containing the necessary type definitions.
+
+4.  **Caching**: The compiled function is cached. Subsequent calls to the function use the cached implementation, so you only pay the latency/API cost once per session.
+
 ## Quickstart
 
 Don't. Quickly or at all. **This really does run `exec` on raw LLM output on your machine.** But if you must:
