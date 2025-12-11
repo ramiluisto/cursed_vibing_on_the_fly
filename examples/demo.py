@@ -4,6 +4,7 @@ from typing import Annotated, Union
 from pydantic import BaseModel, Field
 
 from cursed_vibing_on_the_fly import ai_implement
+
 # Importing cache to inspect stats
 from cursed_vibing_on_the_fly.core import _implementation_cache
 
@@ -53,30 +54,36 @@ def calculate_sum_of_numbers(a: int, b: int) -> int:
     """Calculate the sum of two integers."""
     pass
 
+
 # Example 4: Round float
 @ai_implement
 def round_float(number):
     """Rounds a given float to the nearest integer."""
     pass
 
+
 # Example 5: String equals number
 @ai_implement
-def check_if_string_equals_number(string_input: str, comparison_number: Union[float, int]) -> bool:
+def check_if_string_equals_number(
+    string_input: str, comparison_number: Union[float, int]
+) -> bool:
     """
     This function tries to parse a string into a float or int and then see if the value equals `comparison_number`.
     """
     pass
 
+
 # Track execution results for summary
 execution_log = []
+
 
 def run_example(func, args, expected_desc=""):
     name = func.__name__
     print(f"\n👉 Running {name} with args {args}")
-    
+
     result_status = "FAILED"
     attempts = 0
-    
+
     try:
         result = func(*args)
         print(f"   ✅ Result: {result}")
@@ -101,13 +108,15 @@ def run_example(func, args, expected_desc=""):
         # Try to get attempts even on failure if it partially succeeded or retry limit hit?
         # If it failed, it likely didn't get into cache or raised error during generation.
         # We can't easily get attempts from here if exception was raised during generation.
-    
-    execution_log.append({
-        "function": name,
-        "description": expected_desc,
-        "status": result_status,
-        "attempts": attempts
-    })
+
+    execution_log.append(
+        {
+            "function": name,
+            "description": expected_desc,
+            "status": result_status,
+            "attempts": attempts,
+        }
+    )
 
 
 def print_summary():
@@ -116,9 +125,11 @@ def print_summary():
     print("=" * 80)
     print(f"{'FUNCTION':<35} | {'STATUS':<10} | {'ATTEMPTS':<10} | {'DESCRIPTION'}")
     print("-" * 80)
-    
+
     for entry in execution_log:
-        print(f"{entry['function']:<35} | {entry['status']:<10} | {str(entry['attempts']):<10} | {entry['description']}")
+        print(
+            f"{entry['function']:<35} | {entry['status']:<10} | {str(entry['attempts']):<10} | {entry['description']}"
+        )
     print("=" * 80 + "\n")
 
 
@@ -156,7 +167,7 @@ if __name__ == "__main__":
     print(f"\n--- 3. Sum Test ---")
     run_example(calculate_sum, (10, 20), "Bare definition")
     run_example(calculate_sum_of_numbers, (10, 20), "Rich definition")
-    
+
     # 4. Misc from README
     print(f"\n--- 4. Misc Examples from README ---")
     run_example(round_float, (3.7,), "Docstring only")

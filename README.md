@@ -125,3 +125,7 @@ A colleague shared the following meme:
 <img src="./img/meme.png" width="400" alt="Developers in 2020 vs 2024">
 
 ([source](https://www.reddit.com/r/AICompanions/comments/1ph8w96/developers_in_2020/)) in a chat and I thought that surely as an Agent Developer I can do better than that.
+
+## TODO
+
+1. It seem very inefficient that a failed parsing of a function leads to a vanilla retry call. We should have a more complex retry logic where we continue the discussion with the LLM, giving it the syntax
