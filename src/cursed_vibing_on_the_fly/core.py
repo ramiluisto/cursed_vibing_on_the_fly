@@ -29,7 +29,9 @@ def _get_client():
 
 _implementation_cache: dict[str, callable] = {}
 _RETRY_LIMIT = int(os.environ.get("AI_IMPLEMENT_RETRY_LIMIT", 3))
-_CACHE_ENABLED = os.environ.get("CURSED_VIBING_CACHE_ENABLED", "true").lower() == "true"
+_CACHE_ENABLED = (
+    os.environ.get("CURSED_VIBING_CACHE_ENABLED", "false").lower() == "true"
+)
 
 
 # ============ TYPE EXTRACTION HELPERS ============
