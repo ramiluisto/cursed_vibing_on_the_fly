@@ -88,7 +88,115 @@ You can control behavior with environment variables:
 * `CURSED_VIBING_CACHE_ENABLED`: Set to `true` to enable caching (default: `false`). When disabled, the LLM is called on **every function execution**.
 * `AI_IMPLEMENT_RETRY_LIMIT`: Number of retries on generation failure (default: 3).
 
-## How it works
+### Pro mode
+
+Suppose you have a project with an imaginatively named `main.py` as the entrypoint at the project root folder. Then you could save the following little snippet of code in the same folder as `main.py` with the name `run.py`. This new `run.py` then should work identically to `main.py`, except that **every**. **single**. **Python**, **function**. **used**. is automatically decorated with the placeholder `my_dec` decorator.
+
+I'm not giving you the version where we have `ai_implement` in place of `my_dec` because frankly I'm too scared that one of you would actually run it. If you want to, it's not hard to implement and perhaps that small delay will afford you the time to reconsider. 
+
+Note that the cursed `ai_im plement` decorator does not check if the function is actually implemented but always calls an LLM to implement it. We note that having a single `argparse` CLI argument in `main.py` will produce 124 invocations of `my_dec`. I doubt any non-trivial project would survive "pro-mode".
+
+
+```python
+"""
+This run.py file is supposed to be placed in the root of a project
+where a main.py functions as the main entrypoint. Calling
+`python run.py` will then work similarly to `python main.py`,
+except that *every* Python function will be decorated with the
+`my_dec` decorator below.
+
+This is **NOT** a Pythonic thing to do.
+This is **NOT** a sane thing to do.
+This is a fun thing to do.
+It's cool that it is possible.
+"""
+
+import sys
+import ast
+from importlib.machinery import ModuleSpec
+from importlib.abc import MetaPathFinder, Loader
+from importlib.util import decode_source
+from pathlib import Path
+
+_FORBIDDEN = frozenset(sys.modules.keys())
+
+
+def my_dec(fn):
+    def wrapper(*args, **kwargs):
+        print(
+            f"\t🫣🫣🫣 [decorator injection at] {fn.__module__}.{fn.__name__}() 🫣🫣🫣"
+        )
+        return fn(*args, **kwargs)
+
+    return wrapper
+
+
+class Injector(ast.NodeTransformer):
+    def visit_FunctionDef(self, node):
+        node.decorator_list.insert(0, ast.Name(id="__auto_dec__", ctx=ast.Load()))
+        self.generic_visit(node)
+        return node
+
+    visit_AsyncFunctionDef = visit_FunctionDef
+
+
+class LoaderX(Loader):
+    def __init__(self, origin):
+        self._origin = origin
+
+    def create_module(self, spec):
+        return None
+
+    def exec_module(self, module):
+        source = decode_source(Path(self._origin).read_bytes())
+        tree = Injector().visit(ast.parse(source))
+        ast.fix_missing_locations(tree)
+        module.__dict__["__auto_dec__"] = my_dec
+        exec(compile(tree, self._origin, "exec"), module.__dict__)
+
+
+class FinderX(MetaPathFinder):
+    def find_spec(self, fullname, path, target=None):
+        if fullname in _FORBIDDEN:
+            return None
+        for finder in sys.meta_path:
+            if finder is self:
+                continue
+            spec = getattr(finder, "find_spec", lambda *a: None)(fullname, path, target)
+            if spec and spec.origin and spec.origin.endswith(".py"):
+                return ModuleSpec(
+                    fullname,
+                    LoaderX(spec.origin),
+                    origin=spec.origin,
+                    is_package=spec.submodule_search_locations is not None,
+                )
+        return None
+
+
+sys.meta_path.insert(0, FinderX())
+
+# The following bit is here to make this work as a drop-in replacement
+# entry point for main.py. If we would just `import main` here, then the classical
+# `if __name__ == "__main__":` trigger would not work as the `__name__` that
+# an *imported* main.py would see would just be "main". So this trick here
+# runs main.py in such a way that main.py sees `__name__` as "__main__".
+#
+_main_path = Path(__file__).parent / "main.py"
+sys.argv[0] = str(_main_path)  # Fix argv so main.py sees itself as the script
+_source = decode_source(_main_path.read_bytes())
+_tree = Injector().visit(ast.parse(_source))
+ast.fix_missing_locations(_tree)
+exec(
+    compile(_tree, str(_main_path), "exec"),
+    {
+        "__name__": "__main__",
+        "__file__": str(_main_path),
+        "__auto_dec__": my_dec,
+    },
+)
+```
+
+## How it all works
 
 When you decorate a function with `@ai_implement`, the following happens:
 
