@@ -215,7 +215,11 @@ def _generate_implementation(func):
             # Execute in isolated namespace with required types available
             namespace = {"BaseModel": BaseModel, "Field": Field, "Annotated": Annotated}
             exec(full_code, namespace)
-            return namespace[func_name]
+            
+            # Attach stats
+            implemented_func = namespace[func_name]
+            implemented_func._ai_stats = {"attempts": attempt + 1}
+            return implemented_func
 
         except Exception as e:
             last_error = e
