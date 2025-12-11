@@ -93,22 +93,20 @@ You can control behavior with environment variables:
 When you decorate a function with `@ai_implement`, the following happens:
 
 1. **Inspection**: The decorator inspects your function stub. It gathers:
-    * The function name (very important!).
+    * The function name.
     * The docstring (if provided).
     * Type hints (including Pydantic models and `Annotated` descriptions).
     * Parameter names and default values.
 
-2. **Lazy Generation**: The actual request to the LLM is **NOT** made when you import the module or define the function. It happens only **when you call the function**. This keeps the code feel much more alive and vibrant.
-
-3. **Prompt Construction**: The metadata is compiled into a system prompt that asks an LLM (GPT-5-mini by default) to implement the function body.
-
-4. **Generation & Execution**:
-    * The LLM returns Python code.
+2. **Generation & Execution**:
+    * The metadata is compiled into a system prompt that asks an LLM (GPT-5-mini by default) to implement the function body.
+    * The actual request to the LLM is **NOT** made when you import the module or define the function. It happens only **when you call the function**. This keeps the code feel much more alive and vibrant.
+    * The LLM (hopefully) returns Python code. 
     * The code is cleaned (markdown stripped).
-    * **DANGER**: The code is executed using `exec()` in a local namespace containing the necessary type definitions.
-    * There are `AI_IMPLEMENT_RETRY_LIMIT` retries for getting the function not throw a syntax error.
+    * **DANGER**: The code is executed using `exec()` with the global namespace included to get our new shiny function!
+    * There are `AI_IMPLEMENT_RETRY_LIMIT` amount of retries to the LLM for getting the function definition `exec` call not throw a syntax error.
 
-5. **Caching**: If `CURSED_VIBING_CACHE_ENABLED` is `True`, the compiled function is cached in memory.
+3. **Caching**: If `CURSED_VIBING_CACHE_ENABLED` is `True`, the compiled function is cached in memory.
     * **Subsequent calls** to the function then use the cached implementation immediately.
     * If you restart the script, the cache is lost and the LLM will be called again, regardless of `CURSED_VIBING_CACHE_ENABLED`.
 
@@ -124,4 +122,4 @@ A colleague shared the following meme:
 
 1. It seem very inefficient that a failed parsing of a function leads to a vanilla retry call. We should have a more complex retry logic where we continue the discussion with the LLM, giving it the syntax errors as context.
 2. A more flexible LLM-integration supporting also local models would be great!
-3. Not sure if this would actua
+
