@@ -1,5 +1,5 @@
 """
-Cursed decorator that implements functions by asking OpenAI what they should do.
+Cursed decorator that implements functions by asking OpenAI to write them.
 
 Supports rich type hints including Annotated descriptions and Pydantic schemas.
 """

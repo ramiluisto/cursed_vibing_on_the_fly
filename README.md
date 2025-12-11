@@ -94,6 +94,8 @@ You can control behavior with environment variables:
 * `CURSED_VIBING_CACHE_ENABLED`: Set to `true` to enable caching (default: `false`). When disabled, the LLM is called on **every function execution**.
 * `AI_IMPLEMENT_RETRY_LIMIT`: Number of retries on generation failure (default: 3).
 
+The system hardcodes the use of the `gpt-5-mini` model. It seems to usually get the function syntax correct on the first time, `gpt-5-nano` tended to need several attempts to get even simple functions right.
+
 ## How it works
 
 When you decorate a function with `@ai_implement`, the following happens:
@@ -130,4 +132,3 @@ A colleague shared the following meme:
 
 1. It seem very inefficient that a failed parsing of a function leads to a vanilla retry call. We should have a more complex retry logic where we continue the discussion with the LLM, giving it the syntax errors as context.
 2. A more flexible LLM-integration supporting also local models would be great!
-3. Not sure if this would actua
