@@ -120,4 +120,8 @@ When you decorate a function with `@ai_implement`, the following happens:
 
 ## Why?
 
-A colleague shared [this meme] ./img/meme.png (<https://www.reddit.com/r/AICompanions/comments/1ph8w96/developers_in_2020/>) in a chat and I thought that surely as an Agent Developer I can do better than that.
+A colleague shared the following meme:
+
+![alt text](./img/meme.png)
+
+([source](https://www.reddit.com/r/AICompanions/comments/1ph8w96/developers_in_2020/)) in a chat and I thought that surely as an Agent Developer I can do better than that.
