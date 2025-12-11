@@ -80,12 +80,6 @@ Don't. Quickly or at all. **This really does run `exec` on raw LLM output on you
    uv run pytest -m dangerous
    ```
 
-5. Run without cache, i.e.\ every function call calls LLM:
-
-   ```bash
-   CURSED_VIBING_CACHE_ENABLED=false uv run examples/demo.py
-   ```
-
 ### Configuration
 
 You can control behavior with environment variables:
