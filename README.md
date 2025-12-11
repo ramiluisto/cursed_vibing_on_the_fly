@@ -1,1 +1,45 @@
-# vibing_python_on_the_fly
+# Cursed decorator to vibe Python on the fly
+
+Are you tired of asking an LLM for some code and then having to wait to run it? I know I am. But now we can do better! With this cursed decorator you can vibe Python on the fly! Just define an empty function with a descriptive name and decorate it with `@cursed_vibing`, and OpenAI will implement it on the fly!
+
+**Before:**
+
+> Please Mr. GPT, implement for me a Python function called `check_if_number_is_prime`. 🥺
+
+**After:**
+
+```python
+from cursed_vibing_on_the_fly import ai_implement
+
+@ai_implement
+def check_if_number_is_prime(n):
+    pass
+```
+
+The system can even include docstrings or pydantic type annotations if you want that fine extra control!
+
+```python
+from cursed_vibing_on_the_fly import ai_implement
+
+@ai_implement
+def round_float(number):
+    """Rounds a given float to the nearest integer."""
+    pass
+
+
+@ai_implement
+def check_if_string_equals_number(string_input : str, comparison_number: Union[float, int]): -> bool:
+    """
+    This function tries to parse a string into a float or int and then see if the value equals `comparison_number`.
+    """
+    pass
+```
+
+## Quickstart
+
+Don't. This really does run `exec` on raw LLM outputs. But if you must:
+
+```bash
+uv ...
+
+```
