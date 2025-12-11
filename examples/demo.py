@@ -5,8 +5,8 @@ from pydantic import BaseModel, Field
 
 from cursed_vibing_on_the_fly import ai_implement
 
-# Importing cache to inspect stats
-from cursed_vibing_on_the_fly.core import _implementation_cache
+# Importing caches to inspect stats
+from cursed_vibing_on_the_fly.core import _implementation_cache, _stats_cache
 
 
 # ==========================================
@@ -89,8 +89,11 @@ def run_example(func, args, expected_desc=""):
         print(f"   ✅ Result: {result}")
         result_status = "SUCCESS"
 
-        # Look up stats
-        if name in _implementation_cache:
+        # Look up stats (always available in _stats_cache, regardless of caching setting)
+        if name in _stats_cache:
+            attempts = _stats_cache[name]["attempts"]
+            print(f"   📊 Attempts: {attempts}")
+        elif name in _implementation_cache:
             real_func = _implementation_cache[name]
             if hasattr(real_func, "_ai_stats"):
                 attempts = real_func._ai_stats["attempts"]
@@ -99,15 +102,16 @@ def run_example(func, args, expected_desc=""):
                 attempts = "?"
                 print("   📊 Stats not available")
         else:
-            attempts = "Cache Miss"
-            print("   📊 Stats not found in cache")
+            attempts = "?"
+            print("   📊 Stats not available")
 
     except Exception as e:
         print(f"   ❌ Failed: {e}")
         result_status = "ERROR"
-        # Try to get attempts even on failure if it partially succeeded or retry limit hit?
-        # If it failed, it likely didn't get into cache or raised error during generation.
-        # We can't easily get attempts from here if exception was raised during generation.
+        # Check for stats even on failure (stored before raising exception)
+        if name in _stats_cache:
+            attempts = _stats_cache[name]["attempts"]
+            print(f"   📊 Attempts: {attempts}")
 
     execution_log.append(
         {

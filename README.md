@@ -38,7 +38,7 @@ def check_if_string_equals_number(string_input: str, comparison_number: Union[fl
     pass
 ```
 
-And for a mockery of replicability, the system can cache the LLM-invocations for
+For a mockery of replicability, the system can be set to cache the LLM-invocations for function persistency between calls (in-memory only — lost on restart). As boring as that is.
 
 ## Quickstart
 
@@ -80,7 +80,7 @@ Don't. Quickly or at all. **This really does run `exec` on raw LLM output on you
    uv run pytest -m dangerous
    ```
 
-   5. Run without cache, i.e.\ every function call calls LLM:
+5. Run without cache, i.e.\ every function call calls LLM:
 
    ```bash
    CURSED_VIBING_CACHE_ENABLED=false uv run examples/demo.py
@@ -128,4 +128,6 @@ A colleague shared the following meme:
 
 ## TODO
 
-1. It seem very inefficient that a failed parsing of a function leads to a vanilla retry call. We should have a more complex retry logic where we continue the discussion with the LLM, giving it the syntax
+1. It seem very inefficient that a failed parsing of a function leads to a vanilla retry call. We should have a more complex retry logic where we continue the discussion with the LLM, giving it the syntax errors as context.
+2. A more flexible LLM-integration supporting also local models would be great!
+3. Not sure if this would actua

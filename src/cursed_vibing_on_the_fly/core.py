@@ -10,7 +10,7 @@ import os
 import re
 from functools import wraps
 import typing
-from typing import Annotated, Any, get_args, get_origin, get_type_hints
+from typing import Annotated, Any, Callable, get_args, get_origin, get_type_hints
 
 from openai import OpenAI
 from pydantic import BaseModel, Field
@@ -28,7 +28,8 @@ def _get_client():
     return _client
 
 
-_implementation_cache: dict[str, callable] = {}
+_implementation_cache: dict[str, Callable] = {}
+_stats_cache: dict[str, dict] = {}  # Always stores stats, regardless of caching
 _RETRY_LIMIT = int(os.environ.get("AI_IMPLEMENT_RETRY_LIMIT", 3))
 _CACHE_ENABLED = (
     os.environ.get("CURSED_VIBING_CACHE_ENABLED", "false").lower() == "true"
@@ -216,8 +217,10 @@ def _generate_implementation(func):
             full_code = _build_full_code(func_name, sig, docstring, body_code)
             print(f"🤖 Generated implementation for {func_name}:\n{full_code}")
 
-            # Execute in isolated namespace with required types available
+            # Execute in namespace with access to the original function's globals
+            # plus required types for Pydantic/typing support
             namespace = {
+                **func.__globals__,  # Inherit imports and types from decorated function's module
                 "BaseModel": BaseModel,
                 "Field": Field,
                 "Annotated": Annotated,
@@ -228,11 +231,13 @@ def _generate_implementation(func):
                 "Optional": typing.Optional,
                 "Any": Any,
             }
-            exec(full_code, namespace)
+            exec(full_code, namespace)  # noqa: S102
 
             # Attach stats
             implemented_func = namespace[func_name]
-            implemented_func._ai_stats = {"attempts": attempt + 1}
+            stats = {"attempts": attempt + 1}
+            implemented_func._ai_stats = stats
+            _stats_cache[func_name] = stats  # Always track stats
             return implemented_func
 
         except Exception as e:
@@ -241,6 +246,8 @@ def _generate_implementation(func):
                 f"⚠️  Attempt {attempt + 1}/{_RETRY_LIMIT} failed for {func_name}: {e}"
             )
             if attempt + 1 == _RETRY_LIMIT:
+                # Store stats even on failure so we can report attempts made
+                _stats_cache[func_name] = {"attempts": attempt + 1}
                 raise RuntimeError(
                     f"Failed to generate implementation for {func_name} "
                     f"after {_RETRY_LIMIT} attempts"
