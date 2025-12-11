@@ -9,6 +9,7 @@ import json
 import os
 import re
 from functools import wraps
+import typing
 from typing import Annotated, Any, get_args, get_origin, get_type_hints
 
 from openai import OpenAI
@@ -216,7 +217,17 @@ def _generate_implementation(func):
             print(f"🤖 Generated implementation for {func_name}:\n{full_code}")
 
             # Execute in isolated namespace with required types available
-            namespace = {"BaseModel": BaseModel, "Field": Field, "Annotated": Annotated}
+            namespace = {
+                "BaseModel": BaseModel,
+                "Field": Field,
+                "Annotated": Annotated,
+                "typing": typing,
+                "Union": typing.Union,
+                "List": typing.List,
+                "Dict": typing.Dict,
+                "Optional": typing.Optional,
+                "Any": Any,
+            }
             exec(full_code, namespace)
 
             # Attach stats
