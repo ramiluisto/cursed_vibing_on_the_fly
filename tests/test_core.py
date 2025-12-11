@@ -21,6 +21,28 @@ def test_ai_implement_success(mock_openai):
 
     assert add(1, 2) == 3
     mock_openai.chat.completions.create.assert_called_once()
+    
+    # Verify caching (calling again should not trigger API call)
+    assert add(3, 4) == 7
+    mock_openai.chat.completions.create.assert_called_once()
+
+def test_ai_implement_no_cache(mock_openai):
+    # Setup mock
+    mock_response = MagicMock()
+    mock_response.choices[0].message.content = "return a + b"
+    mock_openai.chat.completions.create.return_value = mock_response
+
+    # Patch _CACHE_ENABLED to False
+    with patch("cursed_vibing_on_the_fly.core._CACHE_ENABLED", False):
+        @ai_implement
+        def add_no_cache(a: int, b: int) -> int:
+            pass
+
+        assert add_no_cache(1, 2) == 3
+        assert mock_openai.chat.completions.create.call_count == 1
+        
+        assert add_no_cache(3, 4) == 7
+        assert mock_openai.chat.completions.create.call_count == 2
 
 def test_ai_implement_syntax_error_retry(mock_openai):
     # Setup mock to return invalid code first, then valid code
