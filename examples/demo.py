@@ -1,10 +1,9 @@
 import sys
-from typing import Annotated
+from typing import Annotated, Union
 
 from pydantic import BaseModel, Field
 
 from cursed_vibing_on_the_fly import ai_implement
-
 # Importing cache to inspect stats
 from cursed_vibing_on_the_fly.core import _implementation_cache
 
@@ -54,6 +53,19 @@ def calculate_sum_of_numbers(a: int, b: int) -> int:
     """Calculate the sum of two integers."""
     pass
 
+# Example 4: Round float
+@ai_implement
+def round_float(number):
+    """Rounds a given float to the nearest integer."""
+    pass
+
+# Example 5: String equals number
+@ai_implement
+def check_if_string_equals_number(string_input: str, comparison_number: Union[float, int]) -> bool:
+    """
+    This function tries to parse a string into a float or int and then see if the value equals `comparison_number`.
+    """
+    pass
 
 def run_example(func, args, expected_desc=""):
     name = func.__name__
@@ -111,3 +123,8 @@ if __name__ == "__main__":
     print(f"\n--- 3. Sum Test ---")
     run_example(calculate_sum, (10, 20), "Bare definition")
     run_example(calculate_sum_of_numbers, (10, 20), "Rich definition")
+    
+    # 4. Misc from README
+    print(f"\n--- 4. Misc Examples from README ---")
+    run_example(round_float, (3.7,), "Docstring only")
+    run_example(check_if_string_equals_number, ("10.5", 10.5), "Complex typing")
