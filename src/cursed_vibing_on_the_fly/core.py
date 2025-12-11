@@ -215,7 +215,7 @@ def _generate_implementation(func):
             # Execute in isolated namespace with required types available
             namespace = {"BaseModel": BaseModel, "Field": Field, "Annotated": Annotated}
             exec(full_code, namespace)
-            
+
             # Attach stats
             implemented_func = namespace[func_name]
             implemented_func._ai_stats = {"attempts": attempt + 1}
@@ -265,4 +265,3 @@ def ai_implement(func):
         return _implementation_cache[func_name](*args, **kwargs)
 
     return wrapper
-
