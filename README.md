@@ -46,14 +46,18 @@ When you decorate a function with `@ai_implement`, the following happens:
     * Type hints (including Pydantic models and `Annotated` descriptions).
     * Parameter names and default values.
 
-2. **Prompt Construction**: This metadata is compiled into a strict system prompt that asks an LLM (GPT-4o-mini by default) to implement the function body.
+2. **Lazy Generation**: The actual request to the LLM is **NOT** made when you import the module or define the function. It happens only **when you call the function for the first time**.
 
-3. **Generation & Execution**:
+3. **Prompt Construction**: The metadata is compiled into a strict system prompt that asks an LLM (GPT-4o-mini by default) to implement the function body.
+
+4. **Generation & Execution**:
     * The LLM returns Python code.
     * The code is cleaned (markdown stripped).
     * **DANGER**: The code is executed using `exec()` in a local namespace containing the necessary type definitions.
 
-4. **Caching**: The compiled function is cached. Subsequent calls to the function use the cached implementation, so you only pay the latency/API cost once per session.
+5. **Caching**: The compiled function is cached in memory.
+    * **Subsequent calls** to the function use the cached implementation immediately.
+    * If you restart the script, the cache is lost and the LLM will be called again.
 
 ## Quickstart
 
