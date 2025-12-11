@@ -17,10 +17,18 @@ from pydantic.fields import FieldInfo
 
 # ============ CONFIGURATION ============
 
-client = OpenAI()  # Uses OPENAI_API_KEY env var
+_client = None
+
+
+def _get_client():
+    global _client
+    if _client is None:
+        _client = OpenAI()  # Uses OPENAI_API_KEY env var
+    return _client
+
 
 _implementation_cache: dict[str, callable] = {}
-_RETRY_LIMIT = int(os.environ.get("AI_IMPLEMENTED_RETRY_LIMIT", 3))
+_RETRY_LIMIT = int(os.environ.get("AI_IMPLEMENT_RETRY_LIMIT", 3))
 
 
 # ============ TYPE EXTRACTION HELPERS ============
@@ -116,14 +124,14 @@ def _build_prompt(func) -> str:
     sig = inspect.signature(func)
 
     lines = [
-        f"Implement this Python function:\n",
+        "Implement this Python function:\n",
         f"def {name}{sig}:",
     ]
 
     if doc:
         lines.append(f'    """{doc}"""')
 
-    lines.append(f"\nParameter details:")
+    lines.append("\nParameter details:")
     for pname, pinfo in params.items():
         lines.extend(_format_param_info(pname, pinfo))
 
@@ -193,7 +201,7 @@ def _generate_implementation(func):
     last_error = None
     for attempt in range(_RETRY_LIMIT):
         try:
-            response = client.chat.completions.create(
+            response = _get_client().chat.completions.create(
                 model="gpt-5-mini",
                 messages=[{"role": "user", "content": prompt}],
             )
@@ -224,7 +232,7 @@ def _generate_implementation(func):
 # ============ THE DECORATOR ============
 
 
-def ai_implemented(func):
+def ai_implement(func):
     """
     Decorator that replaces a stub function with an AI-generated implementation.
 
@@ -234,7 +242,7 @@ def ai_implemented(func):
     - Pydantic models with full schema extraction
 
     Usage:
-        @ai_implemented
+        @ai_implement
         def calculate_sum(
             a: Annotated[int, "First number"],
             b: Annotated[int, "Second number"],
@@ -254,59 +262,3 @@ def ai_implemented(func):
 
     return wrapper
 
-
-# ============ EXAMPLES ============
-
-if __name__ == "__main__":
-
-    # Example 1: Simple types
-    @ai_implemented
-    def check_if_integer_is_prime(n: int) -> bool:
-        """Check if n is a prime number."""
-        pass
-
-    # Example 2: Annotated descriptions
-    @ai_implemented
-    def calculate_compound_interest(
-        principal: Annotated[float, "Initial investment amount"],
-        rate: Annotated[float, "Annual interest rate as decimal (e.g., 0.05 for 5%)"],
-        years: Annotated[int, "Number of years"],
-        compounds_per_year: Annotated[int, "Compounding frequency"] = 12,
-    ) -> Annotated[float, "Final amount after interest"]:
-        """Calculate compound interest."""
-        pass
-
-    # Example 3: Pydantic models
-    class Point(BaseModel):
-        x: float = Field(description="X coordinate")
-        y: float = Field(description="Y coordinate")
-
-    class LineSegment(BaseModel):
-        start: Point = Field(description="Starting point")
-        end: Point = Field(description="Ending point")
-        length: float = Field(description="Euclidean length of segment")
-
-    @ai_implemented
-    def create_line_segment(
-        p1: Annotated[Point, "First point"],
-        p2: Annotated[Point, "Second point"],
-    ) -> Annotated[
-        LineSegment, "Line segment connecting the points with computed length"
-    ]:
-        """Create a line segment between two points, computing the length."""
-        pass
-
-    # Run the examples
-    print("\n" + "=" * 60)
-    print("TESTING AI-IMPLEMENTED FUNCTIONS")
-    print("=" * 60)
-
-    print(f"\n🔢 Is 17 prime? {check_if_integer_is_prime(17)}")
-    print(f"🔢 Is 18 prime? {check_if_integer_is_prime(18)}")  # Uses cache
-
-    result = calculate_compound_interest(1000, 0.05, 10)
-    print(f"\n💰 $1000 at 5% for 10 years = ${result:.2f}")
-
-    segment = create_line_segment(Point(x=0, y=0), Point(x=3, y=4))
-    print(f"\n📏 Segment: {segment}")
-    print(f"   Length: {segment.length}")  # Should be 5.0
