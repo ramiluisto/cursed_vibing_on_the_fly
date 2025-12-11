@@ -67,12 +67,20 @@ def check_if_string_equals_number(string_input: str, comparison_number: Union[fl
     """
     pass
 
+# Track execution results for summary
+execution_log = []
+
 def run_example(func, args, expected_desc=""):
     name = func.__name__
     print(f"\n👉 Running {name} with args {args}")
+    
+    result_status = "FAILED"
+    attempts = 0
+    
     try:
         result = func(*args)
         print(f"   ✅ Result: {result}")
+        result_status = "SUCCESS"
 
         # Look up stats
         if name in _implementation_cache:
@@ -81,12 +89,37 @@ def run_example(func, args, expected_desc=""):
                 attempts = real_func._ai_stats["attempts"]
                 print(f"   📊 Attempts: {attempts}")
             else:
+                attempts = "?"
                 print("   📊 Stats not available")
         else:
+            attempts = "Cache Miss"
             print("   📊 Stats not found in cache")
 
     except Exception as e:
         print(f"   ❌ Failed: {e}")
+        result_status = "ERROR"
+        # Try to get attempts even on failure if it partially succeeded or retry limit hit?
+        # If it failed, it likely didn't get into cache or raised error during generation.
+        # We can't easily get attempts from here if exception was raised during generation.
+    
+    execution_log.append({
+        "function": name,
+        "description": expected_desc,
+        "status": result_status,
+        "attempts": attempts
+    })
+
+
+def print_summary():
+    print("\n" + "=" * 80)
+    print("📢 EXECUTION SUMMARY")
+    print("=" * 80)
+    print(f"{'FUNCTION':<35} | {'STATUS':<10} | {'ATTEMPTS':<10} | {'DESCRIPTION'}")
+    print("-" * 80)
+    
+    for entry in execution_log:
+        print(f"{entry['function']:<35} | {entry['status']:<10} | {str(entry['attempts']):<10} | {entry['description']}")
+    print("=" * 80 + "\n")
 
 
 if __name__ == "__main__":
@@ -128,3 +161,5 @@ if __name__ == "__main__":
     print(f"\n--- 4. Misc Examples from README ---")
     run_example(round_float, (3.7,), "Docstring only")
     run_example(check_if_string_equals_number, ("10.5", 10.5), "Complex typing")
+
+    print_summary()
