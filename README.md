@@ -38,7 +38,7 @@ def check_if_string_equals_number(string_input: str, comparison_number: Union[fl
 
 ## Quickstart
 
-Don't. **This really does run `exec` on raw LLM output on your machine.** But if you must:
+Don't. Quickly or at all. **This really does run `exec` on raw LLM output on your machine.** But if you must:
 
 ### Prerequisites
 
